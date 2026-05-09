@@ -1,0 +1,59 @@
+{
+  "geochem_points_with_ranks.geojson": {
+    "features": 239,
+    "geometry": "Point",
+    "crs": "EPSG:4326",
+    "join": "Geochem_data.Descriptio -> qom_sediment_arcmap.Description_n",
+    "rank_fields": [
+      "Au_rank",
+      "Ag_rank",
+      "Al_rank",
+      "As_rank",
+      "Ba_rank",
+      "Bi_rank",
+      "Ca_rank",
+      "Co_rank",
+      "Cr_rank",
+      "Cs_rank",
+      "Cu_rank",
+      "Fe_rank",
+      "Ga_rank",
+      "Hf_rank",
+      "K_rank",
+      "Li_rank",
+      "Mg_rank",
+      "Mn_rank",
+      "Mo_rank",
+      "Na_rank",
+      "Nb_rank",
+      "Ni_rank",
+      "P_rank",
+      "Pb_rank",
+      "Rb_rank",
+      "Sb_rank",
+      "Sc_rank",
+      "Sn_rank",
+      "Sr_rank",
+      "Ta_rank",
+      "Th_rank",
+      "Ti_rank",
+      "V_rank",
+      "W_rank",
+      "Y_rank",
+      "Zn_rank",
+      "Zr_rank",
+      "REE_sum_rank"
+    ],
+    "example_filter": "Au_rank >= 3"
+  },
+  "qom_polygons.geojson": {
+    "features": 235,
+    "geometry": "Polygon",
+    "crs": "EPSG:4326",
+    "fields": [
+      "Id",
+      "area"
+    ],
+    "note": "No rank fields in uploaded polygon shapefile/xlsx, so polygon filters by Au_rank need a polygon-rank table or spatial aggregation step."
+  }
+}

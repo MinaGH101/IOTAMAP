@@ -1,0 +1,45 @@
+services:
+  postgis:
+    image: postgis/postgis:16-3.4
+    container_name: geo_map_postgis
+    environment:
+      POSTGRES_DB: geomap
+      POSTGRES_USER: geomap_user
+      POSTGRES_PASSWORD: geomap_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: geo_map_backend
+    working_dir: /app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      DATABASE_URL: postgresql://geomap_user:geomap_pass@postgis:5432/geomap
+    depends_on:
+      - postgis
+
+  frontend:
+    image: node:20
+    container_name: geo_map_frontend
+    working_dir: /app
+    command: >
+      sh -c "npm install &&
+             npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  postgis_data:

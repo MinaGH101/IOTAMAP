@@ -1,0 +1,12 @@
+cd backend
+source .venv/bin/activate
+uvicorn main:app --reload
+
+cd frontend
+npm run dev
+
+
+docker compose up --build
+
+docker compose restart frontend
+docker compose restart backend
