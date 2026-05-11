@@ -1,35 +1,33 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import json
 from pathlib import Path
 import pandas as pd
 import math
-
-from database import engine, Base
-import models
-
-from fastapi import UploadFile, File, Form, Depends
-from sqlalchemy.orm import Session
-from geoalchemy2.shape import from_shape
-from pathlib import Path
 import shutil
 import uuid
 
-from database import get_db
+from database import engine, Base, get_db
+import models
 from models import GISLayer, GISFeature
 from gis_processing import extract_zip, find_shapefiles, read_arcmap_excel, read_shapefile, clean_properties
 
+from sqlalchemy.orm import Session
+from geoalchemy2.shape import from_shape
 from geoalchemy2.functions import ST_AsGeoJSON
-from fastapi.middleware.cors import CORSMiddleware
-
-
+from routers import users, projects
 
 app = FastAPI()
 
+# Database initialization
 Base.metadata.create_all(bind=engine)
 
 BASE_DIR = Path(__file__).resolve().parent
 MAP_DIR = BASE_DIR / "data" / "map"
+
+# Register Routers strictly following MapYar API paths
+app.include_router(users.router)
+app.include_router(projects.router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -94,7 +92,6 @@ def get_polygons():
 def get_heavy_minerals():
     with open(MAP_DIR / "heavy_mineral_samples.geojson", encoding="utf-8") as f:
         return json.load(f)
-    
 
 
 @app.post("/api/projects/{project_id}/gis/upload")
@@ -105,6 +102,14 @@ async def upload_gis_files(
     join_field: str = Form("Id"),
     db: Session = Depends(get_db),
 ):
+    # Check if project exists to satisfy foreign key constraints
+    project = db.query(models.GISProject).filter(models.GISProject.id == project_id).first()
+    if not project:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"Project ID {project_id} does not exist. Please create the project first."
+        )
+
     upload_id = str(uuid.uuid4())
     upload_dir = BASE_DIR / "uploads" / project_id / upload_id
     upload_dir.mkdir(parents=True, exist_ok=True)
@@ -113,10 +118,10 @@ async def upload_gis_files(
     excel_path = upload_dir / ranks_excel.filename
 
     with open(zip_path, "wb") as buffer:
-      shutil.copyfileobj(shapefiles_zip.file, buffer)
+        shutil.copyfileobj(shapefiles_zip.file, buffer)
 
     with open(excel_path, "wb") as buffer:
-      shutil.copyfileobj(ranks_excel.file, buffer)
+        shutil.copyfileobj(ranks_excel.file, buffer)
 
     extract_dir = upload_dir / "extracted"
     extract_zip(zip_path, extract_dir)
@@ -190,11 +195,11 @@ async def upload_gis_files(
     db.commit()
 
     return {
+        "status": "success",
         "message": "GIS files imported successfully",
         "project_id": project_id,
         "layers": imported_layers,
     }
-
 
 
 @app.get("/api/projects/{project_id}/gis/layers")

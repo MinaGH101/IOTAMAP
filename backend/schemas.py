@@ -1,12 +1,12 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
 
-# Page 48: api/v1/authorization
+# User Manager (Pages 48-53)
 class LoginRequest(BaseModel):
     username: str
     password: str
 
-# Page 50: api/v1/user (POST)
 class UserCreate(BaseModel):
     username: str
     password: str
@@ -16,8 +16,6 @@ class UserCreate(BaseModel):
     time_expiration: str
     mobile: str
 
-
-# Page 51: PATCH api/v1/user
 class UserUpdate(BaseModel):
     id: str
     rule_id: Optional[str] = None
@@ -28,16 +26,38 @@ class UserUpdate(BaseModel):
     features: Optional[str] = None
     time_expiration: Optional[str] = None
 
-# Page 52: DELETE api/v1/user
 class UserDelete(BaseModel):
     id: str
 
-# Page 52: PATCH api/v1/user/password
 class UserPasswordUpdate(BaseModel):
     id: str
     password: str
 
-# Page 53: PATCH api/v1/user/status/
 class UserStatusUpdate(BaseModel):
     id: str
-    state: str # "active" or "deactive"
+    state: str
+
+# Project Manager (Pages 40-42)
+class ProjectCreate(BaseModel):
+    name: str
+    team_id: str
+    owner_id: str 
+
+class ProjectUpdate(BaseModel):
+    id: str
+    team_id: Optional[str] = None
+    name: Optional[str] = None
+    status: Optional[str] = None
+
+class ProjectDelete(BaseModel):
+    id: str
+
+class ProjectOut(BaseModel):
+    id: str
+    name: str
+    team_id: str
+    status: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

@@ -20,7 +20,7 @@ const Login = () => {
         localStorage.setItem('user_id', result.user_id);
         
         // Redirect to the Upload Page
-        navigate('/upload'); 
+        navigate('/projects'); 
       } else {
         alert('نام کاربری یا رمز عبور اشتباه است');
       }

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE = "http://localhost:8000";
 
-export default function ProjectPage() {
+export default function CreateProjectPage() {
   const navigate = useNavigate();
   const [projectName, setProjectName] = useState("");
   const [shapefileZip, setShapefileZip] = useState(null);
