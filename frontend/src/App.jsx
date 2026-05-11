@@ -1,25 +1,28 @@
-import { useState } from "react";
-import MapView from "./MapView";
-import UploadPage from "./UploadPage";
-import "./App.css";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './components/Login.jsx';
+import Register from './components/Register.jsx';
+import ProjectPage from './components/ProjectPage.jsx';
+import MapView from './components/MapView.jsx'; // Import the Map from the new location
+import './App.css';
 
 function App() {
-  const [showMap, setShowMap] = useState(false);
-  const [mapReloadKey, setMapReloadKey] = useState(0);
-
-  function openMap() {
-    setMapReloadKey((current) => current + 1);
-    setShowMap(true);
-  }
-
   return (
-    <div className="app">
-      {showMap ? (
-        <MapView reloadKey={mapReloadKey} />
-      ) : (
-        <UploadPage onOpenMap={openMap} />
-      )}
-    </div>
+    <Router>
+      <div className="main-wrapper">
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          
+          {/* Main Upload Page */}
+          <Route path="/upload" element={<ProjectPage />} />
+          
+          {/* Add this new route for the Map */}
+          <Route path="/map" element={<MapView />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

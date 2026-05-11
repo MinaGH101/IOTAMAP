@@ -16,7 +16,6 @@ import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import CircleStyle from "ol/style/Circle";
 
-const PROJECT_ID = "test-project-1";
 const API_BASE = "http://localhost:8000";
 const EXPORT_SCALE = 3;
 const PANEL_WIDTH = { layers: 310, filters: 440, legend: 210 };
@@ -286,7 +285,6 @@ function drawLegend(ctx, data, position, scale) {
   if (!rows.length) return;
 
   const pad = 12 * scale, rowH = 17 * scale, titleH = 22 * scale, w = 190 * scale;
-  // In RTL, "x" is the right edge of the legend
   const x = (window.innerWidth - position.x) * scale, y = position.y * scale, h = titleH + pad + rows.length * rowH + pad;
   const leftX = x - w;
 
@@ -328,6 +326,10 @@ function drawLegend(ctx, data, position, scale) {
 }
 
 export default function MapView({ reloadKey = 0 }) {
+  // CRITICAL FIX: Extract current project_id from URL
+  const queryParams = new URLSearchParams(window.location.search);
+  const projectId = queryParams.get("project_id");
+
   const pageRef = useRef(null);
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -388,7 +390,6 @@ export default function MapView({ reloadKey = 0 }) {
       const width = rect?.width || window.innerWidth;
       const height = rect?.height || window.innerHeight;
       
-      // Calculate from right for RTL
       const next = {
         x: Math.max(8, Math.min((rect?.right || width) - event.clientX - panelDragRef.current.offsetX, width - (PANEL_WIDTH[target] || 320) - 8)),
         y: Math.max(8, Math.min(event.clientY - (rect?.top || 0) - panelDragRef.current.offsetY, height - 70)),
@@ -409,6 +410,8 @@ export default function MapView({ reloadKey = 0 }) {
     let cancelled = false;
 
     async function initializeMap() {
+      if (!projectId) return; // Wait for project_id to exist
+
       if (mapInstanceRef.current) mapInstanceRef.current.setTarget(null);
       if (mapRef.current) mapRef.current.innerHTML = "";
 
@@ -421,7 +424,8 @@ export default function MapView({ reloadKey = 0 }) {
       setFilterExpression("");
       setFieldsByLayer({});
 
-      const response = await fetch(`${API_BASE}/api/projects/${PROJECT_ID}/gis/layers`);
+      // UPDATED: Use dynamic projectId
+      const response = await fetch(`${API_BASE}/api/projects/${projectId}/gis/layers`);
       if (cancelled) return;
 
       const layers = dedupeLayers(await response.json());
@@ -435,8 +439,9 @@ export default function MapView({ reloadKey = 0 }) {
         const typeStr = String(layerInfo.layer_type || "").toLowerCase();
         const layerType = typeStr.includes("polygon") ? "polygons" : "points";
         
+        // UPDATED: Use dynamic projectId
         const source = new VectorSource({
-          url: `${API_BASE}/api/projects/${PROJECT_ID}/gis/layers/${layerInfo.id}/features`,
+          url: `${API_BASE}/api/projects/${projectId}/gis/layers/${layerInfo.id}/features`,
           format: new GeoJSON(),
         });
 
@@ -467,6 +472,9 @@ export default function MapView({ reloadKey = 0 }) {
       });
 
       mapInstanceRef.current = map;
+
+      setTimeout(() => { map.updateSize(); }, 100);
+
       map.on("singleclick", (event) => {
         if (captureMode) return;
         let found = null;
@@ -486,7 +494,7 @@ export default function MapView({ reloadKey = 0 }) {
       layerRefs.current = {};
       sourceRefs.current = {};
     };
-  }, [reloadKey]);
+  }, [reloadKey, projectId]); // Added projectId dependency
 
   function styleFeature(feature, layerId, layerType) {
     const active = activeFiltersRef.current;
