@@ -7,8 +7,9 @@ from typing import List
 router = APIRouter(prefix="/api/v1", tags=["Project Manager"])
 
 @router.get("/projects", response_model=List[schemas.ProjectOut])
-def get_projects(team_id: str = "1", db: Session = Depends(database.get_db)):
-    return db.query(models.GISProject).filter(models.GISProject.team_id == team_id).all()
+def get_projects(team_id: str = "1",user_id: str = None, db: Session = Depends(database.get_db)):
+    return db.query(models.GISProject).filter(models.GISProject.team_id == team_id,
+                                              models.GISProject.owner_id == user_id).all()
 
 @router.get("/project", response_model=schemas.ProjectOut)
 def get_project(project_id: str, db: Session = Depends(database.get_db)):

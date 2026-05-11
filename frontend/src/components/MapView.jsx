@@ -16,6 +16,8 @@ import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
 import CircleStyle from "ol/style/Circle";
 
+
+
 const API_BASE = "http://localhost:8000";
 const EXPORT_SCALE = 3;
 const PANEL_WIDTH = { layers: 310, filters: 440, legend: 210 };

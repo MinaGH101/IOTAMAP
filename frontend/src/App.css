@@ -412,8 +412,9 @@ select {
 }
 
 .map-btn {
-  /* flex: 1; */
-  height: 38px;
+  flex: 1;
+  height: 40px;
+  padding: 10px;
   border: none;
   border-radius: 12px;
   font-size: 13px;
@@ -1177,6 +1178,15 @@ html, body, #root {
   font-weight: 900;
   color: var(--blue); /* Blue title as requested */
   margin: 0;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 15px rgba(74, 113, 252, 0.5);
+}
+
+.entry-title-fa {
+  font-size: 36px;
+  font-weight: 600;
+  color: var(--blue); /* Blue title as requested */
+  margin: 0 0 20px 0;
   letter-spacing: 0.1em;
   text-shadow: 0 0 15px rgba(74, 113, 252, 0.5);
 }

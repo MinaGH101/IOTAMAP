@@ -4,6 +4,7 @@ import Login from './components/Login.jsx';
 import Register from './components/Register.jsx';
 import ProjectsPage from './components/ProjectsPage.jsx';
 import CreateProjectPage from './components/CreateProjectPage.jsx';
+import UpdateProjectPage from './components/UpdateProjectPage.jsx';
 import MapView from './components/MapView.jsx'; // Import the Map from the new location
 import './App.css';
 
@@ -20,6 +21,7 @@ function App() {
           {/* <Route path="/upload" element={<ProjectPage />} /> */}
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/projects/create" element={<CreateProjectPage />} />
+          <Route path="/projects/update/:projectId" element={<UpdateProjectPage />} />
           
           {/* Add this new route for the Map */}
           <Route path="/map" element={<MapView />} />
