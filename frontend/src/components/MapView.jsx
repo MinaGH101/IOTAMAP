@@ -391,6 +391,23 @@ export default function MapView({ reloadKey = 0 }) {
   const [layerOpacities, setLayerOpacities] = useState({});
   const [coords, setCoords] = useState({ x: 0, y: 0 });
 
+  const [attributeLayer, setAttributeLayer] = useState(null);
+  const [tableSearch, setTableSearch] = useState("");
+  const [tablePos, setTablePos] = useState({ x: 20, y: 100 });
+  const [tableHeight, setTableHeight] = useState(300);
+
+  const tableData = useMemo(() => {
+    if (!attributeLayer || !sourceRefs.current[attributeLayer]) return [];
+    const source = sourceRefs.current[attributeLayer].source;
+    return source.getFeatures().map(f => {
+      const props = { ...f.getProperties() };
+      delete props.geometry;
+      return props;
+    }).filter(row => 
+      Object.values(row).some(val => String(val).toLowerCase().includes(tableSearch.toLowerCase()))
+    );
+  }, [attributeLayer, tableSearch, gisLayers]);
+
   useEffect(() => {
     const move = (event) => {
       if (!panelDragRef.current) return;
@@ -403,7 +420,11 @@ export default function MapView({ reloadKey = 0 }) {
         x: Math.max(8, Math.min((rect?.right || width) - event.clientX - panelDragRef.current.offsetX, width - (PANEL_WIDTH[target] || 320) - 8)),
         y: Math.max(8, Math.min(event.clientY - (rect?.top || 0) - panelDragRef.current.offsetY, height - 70)),
       };
-      setPos((current) => ({ ...current, [target]: next }));
+      if (target === 'attributeTable') {
+        setTablePos(next);
+      } else {
+        setPos((current) => ({ ...current, [target]: next }));
+      }
     };
     const up = () => { panelDragRef.current = null; };
 
@@ -548,7 +569,15 @@ export default function MapView({ reloadKey = 0 }) {
     event.preventDefault();
     const rect = pageRef.current?.getBoundingClientRect();
     const currentRight = (rect?.right || window.innerWidth) - event.clientX;
-    panelDragRef.current = { target, offsetX: currentRight - pos[target].x, offsetY: event.clientY - pos[target].y };
+    
+    // Logic for the specific table state vs standard panels
+    const currentPos = target === 'attributeTable' ? tablePos : pos[target];
+    
+    panelDragRef.current = { 
+      target, 
+      offsetX: currentRight - currentPos.x, 
+      offsetY: event.clientY - currentPos.y 
+    };
   }
 
   const refreshLayers = () => Object.values(layerRefs.current).forEach((layer) => layer.changed());
@@ -767,6 +796,7 @@ export default function MapView({ reloadKey = 0 }) {
             <div className="map-layer-list">
               {gisLayers.map((layer, index) => {
                 const layerId = String(layer.id);
+                
                 const checked = visibleLayers[layer.id] ?? true;
                 const isDragging = draggingLayerId === layerId;
 
@@ -803,6 +833,12 @@ export default function MapView({ reloadKey = 0 }) {
                     <span title={layerLabel(layer)} style={{ flex: "1 1 auto", textAlign: "right" }}>
                       {layerLabel(layer)} <em style={{ fontSize: "0.8em", opacity: 0.7 }}>({normType(layer.layer_type)})</em>
                     </span>
+                    <IconButton 
+                      title="جدول اطلاعات" 
+                      icon="expand" 
+                      onClick={(e) => { e.stopPropagation(); setAttributeLayer(attributeLayer === layer.id ? null : layer.id); }} 
+                      small 
+                    />
                     <span title="اولویت ترسیم" style={{ color: "var(--text-muted)", fontSize: 11, flex: "0 0 auto" }}>{index + 1}</span>
                   </div>
                 );
@@ -995,6 +1031,75 @@ export default function MapView({ reloadKey = 0 }) {
       }}>
         Lon: {coords.x} | Lat: {coords.y}
       </div>
+{attributeLayer && (
+  <div 
+    className="map-control-panel map-attribute-drawer" 
+    style={{
+          position: 'absolute', 
+          right: tablePos.x, 
+          top: tablePos.y, 
+          width: 'calc(100% - 40px)', 
+          maxWidth: '1200px',
+          height: tableHeight, // State-controlled height
+          zIndex: 3000, 
+          direction: 'rtl',
+          overflow: 'hidden', // Required for resize
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+  >
+    {/* Header is now Draggable */}
+    <div 
+      className="map-filter-header"
+      onPointerDown={(e) => startPanelDrag(e, 'attributeTable')}
+      style={{ cursor: 'move', flexShrink: 0 }}
+    >
+      <div className="map-filter-title">
+        جدول اطلاعات: {layerLabel(layersById[attributeLayer])}
+      </div>
+      <div className="map-filter-actions" onPointerDown={(e) => e.stopPropagation()}>
+        <input 
+          placeholder="جستجو..." 
+          value={tableSearch} 
+          onChange={(e) => setTableSearch(e.target.value)}
+          style={{ background: '#1F2937', color: '#fff', border: '1px solid #374151', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', width: '150px', marginLeft: '10px' }}
+        />
+        <IconButton icon="close" onClick={() => setAttributeLayer(null)} small />
+      </div>
+    </div>
+
+    {/* Table Body - Scrollable */}
+    <div style={{ overflow: 'auto', flex: 1, background: 'rgba(10, 14, 24, 0.95)' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', color: '#D1D5DB', fontSize: '12px', textAlign: 'right' }}>
+        <thead style={{ position: 'sticky', top: 0, background: '#111827', zIndex: 1 }}>
+          <tr>
+            {fieldsByLayer[attributeLayer]?.map(field => (
+              <th key={field} style={{ padding: '10px', border: '1px solid #1F2937', color: '#4A71FC' }}>{field}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {tableData.map((row, i) => (
+            <tr key={i} className="table-hover-row" style={{ borderBottom: '1px solid #1F2937' }}>
+              {fieldsByLayer[attributeLayer]?.map(field => (
+                <td key={field} style={{ padding: '8px', border: '1px solid #1F2937', whiteSpace: 'nowrap' }}>
+                  {String(row[field] ?? "")}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    
+    {/* Resize Handle Hint */}
+    <div style={{ height: '4px', background: '#374151', cursor: 'ns-resize', flexShrink: 0 }} />
+  </div>
+)}
+  onMouseUp={(e) => {
+    const newHeight = e.currentTarget.offsetHeight;
+    setTableHeight(newHeight);
+  }}
     </div>
   );
 }

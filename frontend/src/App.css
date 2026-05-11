@@ -1354,3 +1354,85 @@ html, body, #root {
   gap: 10px;
   direction: ltr; /* Keeps coordinates readable in RTL apps */
 }
+
+
+
+/* Attribute Table Drawer Container */
+.map-attribute-drawer-container {
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Custom Scrollbar for the Table */
+.map-attribute-drawer-container ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.map-attribute-drawer-container ::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+.map-attribute-drawer-container ::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+.map-attribute-drawer-container ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Table Row Hover Effect */
+.table-hover-row:hover {
+  background-color: rgba(74, 113, 252, 0.1) !important;
+  cursor: default;
+}
+
+/* Header Styling */
+.map-attribute-drawer-container th {
+  white-space: nowrap;
+  user-select: none;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+/* Cell Styling */
+.map-attribute-drawer-container td {
+  white-space: nowrap;
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Search Input Focus */
+.map-attribute-drawer-container input:focus {
+  outline: none;
+  border-color: #4A71FC !important;
+  box-shadow: 0 0 0 1px #4A71FC;
+}
+
+
+.map-attribute-drawer {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  border-radius: 8px;
+  background: rgba(10, 14, 24, 0.95);
+  
+  /* Mandatory for resize to work */
+  resize: vertical !important; 
+  overflow: hidden !important;
+  padding: 15px !important;
+  
+  display: flex;
+  flex-direction: column;
+  min-height: 100px;
+}
+
+/* Fix zoom conflict: Ensure table doesn't capture map scroll if mouse is over map */
+.map-attribute-drawer table {
+  user-select: text;
+}
+
+.table-hover-row:hover {
+  background: rgba(74, 113, 252, 0.15) !important;
+}
