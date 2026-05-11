@@ -8,7 +8,8 @@ import VectorLayer from "ol/layer/Vector";
 import OSM from "ol/source/OSM";
 import VectorSource from "ol/source/Vector";
 import GeoJSON from "ol/format/GeoJSON";
-import { fromLonLat } from "ol/proj";
+import { fromLonLat, toLonLat } from "ol/proj";
+import { ScaleLine, defaults as defaultControls } from "ol/control";
 import { extend as extendExtent, createEmpty as createEmptyExtent } from "ol/extent";
 
 import Style from "ol/style/Style";
@@ -44,6 +45,9 @@ const normalPolygonStyle = new Style({
   stroke: new Stroke({ color: "#4A71FC", width: 2 }),
 });
 const hiddenStyle = new Style({});
+
+
+
 
 function Icon({ name, size = 18 }) {
   return <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor"><path d={ICONS[name]} /></svg>;
@@ -384,6 +388,9 @@ export default function MapView({ reloadKey = 0 }) {
     showCrosshatchNote: hasOr(activeExpression) && activeFilters.filter((filter) => filter.layerType === "polygons").length > 1,
   }), [gisLayers, visibleLayers, activeFilters, layersById, activeExpression]);
 
+  const [layerOpacities, setLayerOpacities] = useState({});
+  const [coords, setCoords] = useState({ x: 0, y: 0 });
+
   useEffect(() => {
     const move = (event) => {
       if (!panelDragRef.current) return;
@@ -471,6 +478,13 @@ export default function MapView({ reloadKey = 0 }) {
         target: mapRef.current,
         layers: [new TileLayer({ source: new OSM({ crossOrigin: "anonymous" }), zIndex: 0 }), ...vectorLayers],
         view: new View({ center: fromLonLat([50.9, 34.6]), zoom: 8 }),
+        controls: defaultControls().extend([new ScaleLine({ units: 'metric' })]), // Feature: Scale Bar
+      });
+
+      // Feature: Coordinate Display
+      map.on("pointermove", (event) => {
+        const lonLat = toLonLat(event.coordinate);
+        setCoords({ x: lonLat[0].toFixed(4), y: lonLat[1].toFixed(4) });
       });
 
       mapInstanceRef.current = map;
@@ -543,6 +557,13 @@ export default function MapView({ reloadKey = 0 }) {
     setVisibleLayers((current) => ({ ...current, [layerId]: isVisible }));
     layerRefs.current[String(layerId)]?.setVisible(isVisible);
   }
+
+  function changeLayerOpacity(layerId, value) {
+      const opacity = parseFloat(value);
+      setLayerOpacities(prev => ({ ...prev, [layerId]: opacity }));
+      const layer = layerRefs.current[String(layerId)];
+      if (layer) layer.setOpacity(opacity);
+    }
 
   function applyLayerOrder(orderedLayers) {
     orderedLayers.forEach((layerInfo, index) => layerRefs.current[String(layerInfo.id)]?.setZIndex(1000 + orderedLayers.length - index));
@@ -911,6 +932,17 @@ export default function MapView({ reloadKey = 0 }) {
               <div key={layer.id} className={`map-legend-row ${visibleLayers[layer.id] === false ? "is-disabled" : ""}`}>
                 <span className={`map-legend-symbol ${String(layer.layer_type || "").toLowerCase().includes("polygon") ? "polygon" : "point"}`} />
                 <span title={layerLabel(layer)}>{layerLabel(layer)}</span>
+                <div className="layer-opacity-container" style={{ padding: '0 10px 5px' }}>
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="1" 
+                    step="0.01" 
+                    value={layerOpacities[layer.id] ?? 1} 
+                    onChange={(e) => changeLayerOpacity(layer.id, e.target.value)}
+                    style={{ width: '100%', cursor: 'pointer' }}
+                  />
+                </div>
               </div>
             ))}
 
@@ -947,6 +979,22 @@ export default function MapView({ reloadKey = 0 }) {
           </div>
         </div>
       )}
+
+      {/* Bottom Right Coordinate Display */}
+      <div style={{
+        position: 'absolute',
+        bottom: '10px',
+        right: '10px',
+        background: 'rgba(0,0,0,0.6)',
+        color: 'white',
+        padding: '4px 8px',
+        borderRadius: '4px',
+        fontSize: '12px',
+        pointerEvents: 'none',
+        zIndex: 1000
+      }}>
+        Lon: {coords.x} | Lat: {coords.y}
+      </div>
     </div>
   );
 }
