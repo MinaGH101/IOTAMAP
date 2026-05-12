@@ -1179,7 +1179,6 @@ html, body, #root {
   color: var(--blue); /* Blue title as requested */
   margin: 0;
   letter-spacing: 0.1em;
-  text-shadow: 0 0 15px rgba(74, 113, 252, 0.5);
 }
 
 .entry-title-fa {
@@ -1188,7 +1187,6 @@ html, body, #root {
   color: var(--blue); /* Blue title as requested */
   margin: 0 0 20px 0;
   letter-spacing: 0.1em;
-  text-shadow: 0 0 15px rgba(74, 113, 252, 0.5);
 }
 
 .entry-subtitle {
@@ -1413,19 +1411,26 @@ html, body, #root {
 
 
 .map-attribute-drawer {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-  border-radius: 8px;
-  background: rgba(10, 14, 24, 0.95);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 -5px 25px rgba(0,0,0,0.5);
+  z-index: 1000;
+  transition: transform 0.3s ease;
+  padding: 20px !important;
   
-  /* Mandatory for resize to work */
-  resize: vertical !important; 
-  overflow: hidden !important;
-  padding: 15px !important;
+  /* Critical fix for resizing */
+  resize: both !important; 
+  overflow: auto !important; 
   
-  display: flex;
-  flex-direction: column;
+  /* Ensure a minimum and maximum height/width for better UX */
   min-height: 100px;
+  max-height: 80vh;
+  min-width: 200px;
 }
 
 /* Fix zoom conflict: Ensure table doesn't capture map scroll if mouse is over map */

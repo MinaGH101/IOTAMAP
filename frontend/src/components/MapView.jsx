@@ -46,9 +46,6 @@ const normalPolygonStyle = new Style({
 });
 const hiddenStyle = new Style({});
 
-
-
-
 function Icon({ name, size = 18 }) {
   return <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor"><path d={ICONS[name]} /></svg>;
 }
