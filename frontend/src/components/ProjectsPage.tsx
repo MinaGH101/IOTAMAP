@@ -1,14 +1,20 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+// ۱. تعریف بلوپرینت (Interface) برای پروژه
+interface Project {
+  id: string | number;
+  name?: string;
+}
+
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState([]);
+  // ۲. تایپ‌گذاری State برای آرایه‌ای از پروژه‌ها
+  const [projects, setProjects] = useState<Project[]>([]);
   const navigate = useNavigate();
 
-  // دریافت ID کاربر فعلی برای فیلتر کردن پروژه‌ها
+  // دریافت ID کاربر فعلی
   const userId = localStorage.getItem("user_id");
 
-  // آدرس‌های API بر اساس آخرین تغییرات بک‌اَند
   const API_LIST = "http://localhost:8000/api/v1/projects";
   const API_ACTION = "http://localhost:8000/api/v1/project";
 
@@ -19,9 +25,9 @@ export default function ProjectsPage() {
     }
 
     try {
-      // ارسال userId به بک‌اَند برای دریافت پروژه‌های اختصاصی کاربر
       const res = await fetch(`${API_LIST}?user_id=${userId}`);
       const data = await res.json();
+      // اطمینان از اینکه دیتا آرایه است
       setProjects(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("خطا در دریافت لیست پروژه‌ها:", err);
@@ -32,12 +38,12 @@ export default function ProjectsPage() {
     fetchProjects(); 
   }, []);
 
-  const handleDelete = async (id, e) => {
+  // ۳. تایپ‌گذاری پارامترهای تابع حذف
+  const handleDelete = async (id: string | number, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!window.confirm("آیا از حذف این پروژه و تمام لایه‌های آن اطمینان دارید؟")) return;
 
     try {
-      // حذف پروژه با ارسال ID در Body
       const res = await fetch(API_ACTION, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -45,7 +51,7 @@ export default function ProjectsPage() {
       });
       
       if (res.ok) {
-        setProjects(projects.filter(p => p.id !== id));
+        setProjects(prev => prev.filter(p => p.id !== id));
       } else {
         alert("خطا در حذف پروژه. ممکن است محدودیت‌های دیتابیس مانع شده باشد.");
       }
@@ -77,7 +83,7 @@ export default function ProjectsPage() {
                   {project.name || `پروژه بدون نام (${project.id})`}
                 </button>
                 
-                {/* دکمه ویرایش (جدید) */}
+                {/* دکمه ویرایش */}
                 <button
                   className="map-icon-button"
                   title="ویرایش پروژه"

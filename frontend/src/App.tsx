@@ -1,14 +1,19 @@
+// src/App.tsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './components/Login.jsx';
-import Register from './components/Register.jsx';
-import ProjectsPage from './components/ProjectsPage.jsx';
-import CreateProjectPage from './components/CreateProjectPage.jsx';
-import UpdateProjectPage from './components/UpdateProjectPage.jsx';
-import MapView from './components/MapView.jsx'; // Import the Map from the new location
+
+// 1. ADDED EXPLICIT EXTENSIONS
+// Use .js even though the source files are .tsx
+import Login from './components/Login.js';
+import Register from './components/Register.js';
+import CreateProjectPage from './components/CreateProjectPage.js';
+import UpdateProjectPage from './components/UpdateProjectPage.js';
+import MapView from './components/Map/MapView.js'; 
+import ProjectsPage from './components/ProjectsPage.js';
+
 import './App.css';
 
-function App() {
+const App: React.FC = () => {
   return (
     <Router>
       <div className="main-wrapper">
@@ -17,13 +22,10 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           
-          {/* Main Upload Page */}
-          {/* <Route path="/upload" element={<ProjectPage />} /> */}
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/projects/create" element={<CreateProjectPage />} />
           <Route path="/projects/update/:projectId" element={<UpdateProjectPage />} />
           
-          {/* Add this new route for the Map */}
           <Route path="/map" element={<MapView />} />
         </Routes>
       </div>
