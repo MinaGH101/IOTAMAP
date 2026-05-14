@@ -46,3 +46,23 @@ export interface SourceRefs {
     type: 'points' | 'polygons';
   };
 }
+
+
+// src/components/Map/types.ts
+export interface MapFilter {
+  id: string;
+  active: boolean;
+  layerId: string;
+  layerType: 'points' | 'polygons';
+  field: string;
+  operator: string;
+  value: string|number;
+  color: string;
+  priority: number;
+  collapsed: boolean;
+  // فیلدهای جدید برای منطق
+  logic?: 'AND' | 'OR'; 
+  linked?: boolean;
+}
+
+

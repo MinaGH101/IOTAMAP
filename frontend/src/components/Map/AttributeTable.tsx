@@ -1,57 +1,39 @@
-// src/components/Map/AttributeTable.tsx
-import React from 'react';
-import { IconButton } from './MapIcons.js';
-import { layerLabel } from './MapUtils.js';
-import { type GISLayer, type PanelPosition } from './types.js';
+import React, { useRef } from 'react';
+import { IconButton } from './MapIcons';
+import { layerLabel } from './MapUtils';
 
-interface AttributeTableProps {
-  attributeLayer: string | number | null;
-  layersById: Record<string, GISLayer>;
-  fieldsByLayer: Record<string, string[]>;
-  tableData: any[];
-  tablePos: PanelPosition;
-  tableHeight: number;
-  tableSearch: string;
-  setTableSearch: (val: string) => void;
-  setAttributeLayer: (val: string | null) => void;
-  startPanelDrag: (e: React.PointerEvent, target: string) => void;
-  setTableHeight: (val: number) => void;
-}
+const AttributeTable = ({ 
+  attributeLayer, layersById, fieldsByLayer, tableData, 
+  tablePos, tableHeight, tableWidth, tableSearch, 
+  setTableSearch, setAttributeLayer, startPanelDrag, 
+  setTableSize 
+}: any) => {
+  const tableRef = useRef<HTMLDivElement>(null);
 
-const AttributeTable: React.FC<AttributeTableProps> = ({
-  attributeLayer,
-  layersById,
-  fieldsByLayer,
-  tableData,
-  tablePos,
-  tableHeight,
-  tableSearch,
-  setTableSearch,
-  setAttributeLayer,
-  startPanelDrag,
-  setTableHeight
-}) => {
   if (!attributeLayer) return null;
 
   return (
     <div 
+      ref={tableRef}
       className="map-control-panel map-attribute-drawer" 
       style={{
         position: 'absolute', 
         right: tablePos.x, 
         top: tablePos.y, 
-        width: 'calc(100% - 40px)', 
-        maxWidth: '1200px',
-        height: tableHeight, 
+        width: tableWidth || '800px', 
+        height: tableHeight || '300px', 
         zIndex: 3000, 
         direction: 'rtl',
         overflow: 'hidden', 
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        resize: 'both' // Enables the handle at bottom-right
       }}
-      onMouseUp={(e) => {
-        const newHeight = (e.currentTarget as HTMLElement).offsetHeight;
-        setTableHeight(newHeight);
+      onMouseUp={() => {
+        if (tableRef.current) {
+          // Persist the size changes to state
+          setTableSize(tableRef.current.offsetWidth, tableRef.current.offsetHeight);
+        }
       }}
     >
       <div 
@@ -59,11 +41,10 @@ const AttributeTable: React.FC<AttributeTableProps> = ({
         onPointerDown={(e) => startPanelDrag(e, 'attributeTable')}
         style={{ cursor: 'move', flexShrink: 0 }}
       >
-        <div className="map-filter-title">
-          جدول اطلاعات: {layerLabel(layersById[String(attributeLayer)])}
-        </div>
+        <div className="map-filter-title">جدول اطلاعات: {layerLabel(layersById[String(attributeLayer)])}</div>
         <div className="map-filter-actions" onPointerDown={(e) => e.stopPropagation()}>
           <input 
+            className="map-table-search" 
             placeholder="جستجو..." 
             value={tableSearch} 
             onChange={(e) => setTableSearch(e.target.value)}
@@ -77,15 +58,15 @@ const AttributeTable: React.FC<AttributeTableProps> = ({
         <table style={{ width: '100%', borderCollapse: 'collapse', color: '#D1D5DB', fontSize: '12px', textAlign: 'right' }}>
           <thead style={{ position: 'sticky', top: 0, background: '#111827', zIndex: 1 }}>
             <tr>
-              {fieldsByLayer[String(attributeLayer)]?.map(field => (
+              {fieldsByLayer[String(attributeLayer)]?.map((field: string) => (
                 <th key={field} style={{ padding: '10px', border: '1px solid #1F2937', color: '#4A71FC' }}>{field}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {tableData.map((row, i) => (
+            {tableData.map((row: any, i: number) => (
               <tr key={i} className="table-hover-row" style={{ borderBottom: '1px solid #1F2937' }}>
-                {fieldsByLayer[String(attributeLayer)]?.map(field => (
+                {fieldsByLayer[String(attributeLayer)]?.map((field: string) => (
                   <td key={field} style={{ padding: '8px', border: '1px solid #1F2937', whiteSpace: 'nowrap' }}>
                     {String(row[field] ?? "")}
                   </td>
@@ -95,7 +76,6 @@ const AttributeTable: React.FC<AttributeTableProps> = ({
           </tbody>
         </table>
       </div>
-      <div style={{ height: '4px', background: '#374151', cursor: 'ns-resize', flexShrink: 0 }} />
     </div>
   );
 };

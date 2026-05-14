@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
 
+
 :root {
   --blue: #4A71FC;
   --blue-hover: #5D80FF;
@@ -129,11 +130,11 @@ select {
 }
 
 .map-icon-button {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: 1px solid var(--border-soft);
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--bg-button);
   color: #dce5f2;
   cursor: pointer;
