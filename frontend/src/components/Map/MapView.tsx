@@ -68,7 +68,7 @@ export default function MapView() {
   const [pos, setPos] = useState<Record<string, PanelPosition>>({ 
     layers: { x: 16, y: 64 }, 
     filters: { x: 1300, y: 20 }, 
-    legend: { x: 16, y: 240 },
+    legend: { x: 16, y: 280 },
     attributeTable: { x: 380, y: 500 }
   });
 
